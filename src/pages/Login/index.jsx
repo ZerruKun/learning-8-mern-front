@@ -13,7 +13,7 @@ import { fetchAuth, selectIsAuth } from "../../redux/slices/auth";
 export const Login = () => {
   const isAuth = useSelector(selectIsAuth);
   const dispatch = useDispatch();
-  const {register, handleSubmit, setError, formState: {errors, isValid}} = useForm({
+  const {register, handleSubmit, formState: {errors, isValid}} = useForm({
     defaultValues: {
       email: "test@test.ru",
       password: "12345",
@@ -57,9 +57,10 @@ export const Login = () => {
           label="Пароль"
           error = {Boolean(errors.password?.message)}
           helperText={errors.password?.message}
+          type="password"
           {...register("password", {required: "Укажите пароль"})}
           fullWidth />
-        <Button type="submit" size="large" variant="contained" fullWidth>
+        <Button disabled={!isValid} type="submit" size="large" variant="contained" fullWidth>
           Войти
         </Button>
       </form>
