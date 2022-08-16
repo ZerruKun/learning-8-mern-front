@@ -22,6 +22,8 @@ export const AddPost = () => {
   const [imageUrl, setImageUrl] = React.useState("");
   const inputFileRef = React.useRef(null);
 
+  const isEditing = Boolean(id);
+
   const handleChangeFile = async (event) => {
     try {
       const formData = new FormData();
@@ -58,11 +60,13 @@ export const AddPost = () => {
         text,
       }
 
-      const {data} = await axios.post("/posts", fields);
+      const {data} = isEditing 
+      ? await axios.patch(`/posts/${id}`, fields) 
+      : await axios.post("/posts", fields);
 
-      const id = data._id;
+      const _id = isEditing ? id : data._id;
 
-      navigate(`/posts/${id}`);
+      navigate(`/posts/${_id}`);
 
     } catch (error) {
       console.warn(error);
@@ -72,11 +76,14 @@ export const AddPost = () => {
 
   React.useEffect(() => {
     if(id) {
-      axios.get(`/posts/${id}`).then((res) => {
-        setTitle(res.title);
-        setText(res.title);
-        setImageUrl(res.imageUrl);
-        setTags(res.tags);
+      axios.get(`/posts/${id}`).then(({data}) => {
+        setTitle(data.title);
+        setText(data.title);
+        setImageUrl(data.imageUrl);
+        setTags(data.tags.join(","));
+      }).catch(error => {
+        console.warn(error);
+        alert("Ошибка при создании статьи!");
       });
     }
   }, []);
@@ -163,7 +170,7 @@ export const AddPost = () => {
       /> */}
       <div className={styles.buttons}>
         <Button onClick={onSubmit} size="large" variant="contained">
-          Опубликовать
+          {isEditing ? "Сохранить" : "Опубликовать"}
         </Button>
         <a href="/">
           <Button size="large">Отмена</Button>
