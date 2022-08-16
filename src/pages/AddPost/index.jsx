@@ -2,16 +2,17 @@ import React from "react";
 import TextField from "@mui/material/TextField";
 import Paper from "@mui/material/Paper";
 import Button from "@mui/material/Button";
-import SimpleMDE from "react-simplemde-editor";
+// import SimpleMDE from "react-simplemde-editor";
 
 import "easymde/dist/easymde.min.css";
 import styles from "./AddPost.module.scss";
 import { selectIsAuth } from "../../redux/slices/auth";
 import { useSelector } from "react-redux";
-import { useNavigate, Navigate } from "react-router-dom";
+import { useNavigate, Navigate, useParams } from "react-router-dom";
 import axios from "../../axios";
 
 export const AddPost = () => {
+  const {id} = useParams();
   const navigate = useNavigate();
   const isAuth = useSelector(selectIsAuth);
   const [isLoading, setIsLoading] = React.useState("false");
@@ -38,9 +39,13 @@ export const AddPost = () => {
     setImageUrl("");
   };
 
-  const onChange = React.useCallback((value) => {
-    setText(value);
-  }, []);
+  // const onChange = React.useCallback((value) => {
+  //   setText(value);
+  // }, []);
+
+  // const onChange = (value) => {
+  //   setText(value);
+  // }
 
   const onSubmit = async () => {
     try {
@@ -63,22 +68,33 @@ export const AddPost = () => {
       console.warn(error);
       alert("Ошибка при создании статьи!");
     }
-  }
+  };
 
-  const options = React.useMemo(
-    () => ({
-      spellChecker: false,
-      maxHeight: "400px",
-      autofocus: true,
-      placeholder: "Введите текст...",
-      status: false,
-      autosave: {
-        enabled: true,
-        delay: 1000,
-      },
-    }),
-    []
-  );
+  React.useEffect(() => {
+    if(id) {
+      axios.get(`/posts/${id}`).then((res) => {
+        setTitle(res.title);
+        setText(res.title);
+        setImageUrl(res.imageUrl);
+        setTags(res.tags);
+      });
+    }
+  }, []);
+
+  // const options = React.useMemo(
+  //   () => ({
+  //     spellChecker: false,
+  //     maxHeight: "400px",
+  //     autofocus: true,
+  //     placeholder: "Введите текст...",
+  //     status: false,
+  //     autosave: {
+  //       enabled: true,
+  //       delay: 1000,
+  //     },
+  //   }),
+  //   []
+  // );
 
   if (!window.localStorage.getItem("token") && !isAuth) {
     return <Navigate to="/" />;
@@ -131,12 +147,20 @@ export const AddPost = () => {
         onChange={(e) => setTags(e.target.value)}
         fullWidth
       />
-      <SimpleMDE
+      <textarea
+        style={{ backgroundColor: "#cfe1fe", width: "600px", minHeight: "200px", marginTop: "30px"}}
+        variant="standard"
+        placeholder="Текст"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        fullWidth
+      />
+      {/* <SimpleMDE
         className={styles.editor}
         value={text}
         onChange={onChange}
         options={options}
-      />
+      /> */}
       <div className={styles.buttons}>
         <Button onClick={onSubmit} size="large" variant="contained">
           Опубликовать
